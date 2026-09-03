@@ -17,76 +17,144 @@ description: >-
   à contacter à l'intérieur.
 ---
 
-# Recherche de contacts dans une entreprise cible
+# Recherche de contacts dans une entreprise cible (Skill 2)
 
-## Pourquoi cette méthode en particulier
+**Entrée** : une ou plusieurs entreprises déjà identifiées.
+**Sortie** : un tableau de contacts, avec rôle, coordonnées, sources et rappel RGPD.
 
-Le piège classique de ce genre de recherche est de chercher un titre de poste unique ("le DSI", "le directeur achats") sans tenir compte de la taille de l'entreprise. Dans une startup, c'est souvent le fondateur qui tranche seul ; dans une PME, un responsable de service ; dans un grand groupe, la décision passe par plusieurs personnes (souvent 6 à 10 sur une vente complexe). Raisonner par **rôle fonctionnel** (qui tient le budget, qui évalue techniquement, qui utilisera la solution) plutôt que par intitulé figé évite de rater le bon interlocuteur simplement parce que son titre exact diffère de ce qu'on avait en tête.
+## Objectif
 
-De la même façon, il vaut mieux épuiser les sources publiques et gratuites avant de chercher un email ou un téléphone via un outil payant : la plupart du temps, le site de l'entreprise, LinkedIn et les registres légaux suffisent à identifier les bonnes personnes ; l'outil payant sert ensuite à confirmer ou compléter, pas à découvrir.
+Identifier les personnes à contacter dans des entreprises cibles connues, puis fournir leurs coordonnées quand elles sont trouvables légalement.
+
+## Principes
+
+**Raisonner par rôle, pas par intitulé.** Chercher un titre unique — « le DSI », « le directeur achats » — ignore la taille de l'entreprise. Dans une startup, le fondateur tranche seul ; dans une PME, un responsable de service ; dans un grand groupe, six à dix personnes interviennent sur une vente complexe. Raisonner par rôle fonctionnel — qui tient le budget, qui évalue techniquement, qui utilisera la solution — évite de rater le bon interlocuteur parce que son titre diffère de celui attendu.
+
+**Épuiser le gratuit avant le payant pour identifier les personnes.** Le site de l'entreprise, les registres légaux et l'index du moteur suffisent le plus souvent. L'outil payant confirme et complète, il ne découvre pas.
+
+Nuance arbitrée en interne : sur **l'enrichissement du numéro de téléphone**, le recours à un outil payant est accepté et n'est pas un frein budgétaire. C'est l'identification des entreprises et des personnes qui doit rester indépendante de toute API payante.
+
+**Décideur et prescripteur ne se travaillent pas pareil.** Le **N** valide et paie ; il répond peu par écrit mais prend plus volontiers le téléphone, et redirige souvent vers son N-1 avec une semi-introduction exploitable. Le **N-1** est le prescripteur opérationnel : il doit être convaincu pour porter le sujet, et peut freiner s'il se sent contourné. Identifier les deux quand c'est possible, et le dire dans la sortie.
+
+**LinkedIn ne s'ouvre jamais depuis la skill.** Deux raisons, l'une technique et l'autre de risque.
+
+Techniquement, le robots.txt de LinkedIn interdit l'accès automatisé : une tentative de chargement d'une page LinkedIn échoue en `ROBOTS_DISALLOWED`. Ce qui reste accessible, c'est **l'index du moteur de recherche**, qui n'est pas LinkedIn : une requête `site:linkedin.com/in "Entreprise" DSI` renvoie des titres du type « Prénom Nom - Data Analyst chez Entreprise », donc un nom, une société et souvent une fonction, sans qu'aucune requête ne parte vers LinkedIn.
+
+Côté risque, ce sont les extensions de navigateur et les sessions automatisées qui font restreindre puis supprimer un compte — celui du collaborateur, pas celui de l'éditeur. Kaspr a par ailleurs été sanctionné 240 000 € par la CNIL en décembre 2024 pour ce modèle exact, et a cessé toute collecte LinkedIn en mars 2026. Détail dans `references/outils-sales-intelligence.md`.
+
+**Règle : recherche par moteur autorisée, ouverture de LinkedIn interdite.** Aucun compte, aucune extension, aucun navigateur pointé sur linkedin.com.
 
 ## Étape 0 — Clarifier la demande
 
-Récupère le ou les noms d'entreprise à traiter. Si l'utilisateur précise déjà un rôle recherché (ex : "le DSI", "la personne en charge des achats IT", "le responsable Data/IA"), garde ce rôle tel quel comme fil conducteur de la recherche.
+Récupérer le ou les noms d'entreprise à traiter.
 
-S'il ne précise rien, ne te limite pas à un seul poste : propose toi-même 2 à 4 rôles plausibles en fonction de la taille et du secteur de l'entreprise (par exemple pour une mission de conseil Data/IA/Cyber : DSI ou CTO, directeur/responsable Data, RSSI, directeur des opérations — à adapter). Explique brièvement ce choix à l'utilisateur plutôt que de l'imposer silencieusement.
+Si un rôle est précisé — « le DSI », « la personne en charge des achats IT », « le responsable Data/IA » — le garder tel quel comme fil conducteur.
 
-## Étape 1 — Vérifier les connecteurs disponibles (à faire à chaque exécution, pas seulement une fois)
+Sinon, proposer 2 à 4 rôles plausibles selon la taille et le secteur. Expliquer brièvement ce choix plutôt que l'imposer en silence.
 
-Avant de commencer la recherche manuelle, appelle `SearchMcpRegistry` avec des mots-clés comme "LinkedIn Sales Navigator", "Apollo.io", "Hunter.io", "Kaspr", "Lusha", "Cognism", "Clearbit", "ZoomInfo", "RocketReach", "Dropcontact". Les connecteurs disponibles pour une session évoluent dans le temps et selon l'organisation ; ne pars jamais du principe qu'aucun outil n'est branché sans avoir vérifié à ce moment précis.
+Les intitulés varient d'une entreprise à l'autre et c'est la première cause de contact manqué : un même poste s'appelle Head of AI ici, Directeur Intelligence Artificielle là, AI Factory ailleurs. Raisonner par fonction, pas par libellé.
 
-Si un connecteur pertinent est disponible et activé, utilise-le pour rechercher directement les contacts et/ou vérifier email et téléphone : c'est plus fiable que la déduction manuelle. Si rien n'est disponible, dis-le clairement à l'utilisateur dans le résultat final et propose de connecter l'outil s'il en utilise un en interne.
+Titres réellement occupés chez les clients NDA, à utiliser comme référentiel plutôt que de deviner :
 
-## Étape 2 — Sources publiques et gratuites (toujours en premier)
+| Fonction | Intitulés observés |
+|---|---|
+| Architecture SI | Enterprise IT Architect, Chief Enterprise Architect Officer, Directeur IT Architecture |
+| Data et IA | Group Chief Data Officer, Chief Data Officer, Responsable Data & IA, Responsable LABs IA et Innovation |
+| Direction SI | CIO, DSI, Directeur de la Transformation Digitale |
+| Métier et produit | Product Manager, Digital Strategy Director |
 
-Pour chaque entreprise, cherche dans cet ordre (WebSearch / WebFetch, et navigateur si disponible — voir Étape 3) :
+**Plafond : deux personnes par entreprise au maximum.** Au-delà, le risque de collision interne dépasse le gain — deux collaborateurs NDA contactant trois personnes de la même société décrédibilisent le cabinet.
 
-1. Le site web de l'entreprise : page "Équipe", "À propos", "Direction", "Presse".
-2. Les mentions légales du site, qui indiquent souvent le représentant légal.
-3. Pour une entreprise française : Société.com ou Pappers, qui donnent l'identité des dirigeants inscrits au RCS.
-4. Les communiqués de presse et la rubrique presse de l'entreprise.
-5. Les offres d'emploi publiées par l'entreprise : elles révèlent l'organigramme et parfois le nom du manager recruteur.
-6. Les interventions publiques (conférences, webinars, podcasts, tribunes) où des cadres de l'entreprise sont cités nommément.
-7. La page entreprise LinkedIn (liste des employés, filtrable par fonction).
+### Contrôle anti-doublon, avant toute livraison
 
-Ces sources suffisent en général à construire une première liste de 2 à 5 candidats plausibles par entreprise, avant même de chercher un email.
+Vérifier dans la base de suivi si l'entreprise ou la personne y figure déjà. Un contact déjà sollicité ne se repropose pas : indiquer qui le suit et depuis quand. Une entreprise déjà travaillée par un autre collaborateur se signale avant de proposer un second interlocuteur.
 
-## Étape 3 — Navigateur (si le bridge Chrome est connecté)
+Ce contrôle est bloquant. Sans lui, un prospect reçoit deux messages presque identiques de deux personnes différentes, et le cabinet perd sa crédibilité en un envoi.
 
-Si les outils `mcp__claude-in-chrome__*` sont disponibles, utilise-les pour naviguer vers les pages publiques identifiées à l'étape 2 (site de l'entreprise, page LinkedIn publique de l'entreprise) et en extraire les informations affichées. Reste sur des pages publiques et consultées une par une : ne fais jamais de scraping en masse de profils LinkedIn ni de contournement des CGU de la plateforme — au-delà du risque de blocage du compte, ce n'est pas nécessaire pour ce cas d'usage, qui ne demande que quelques profils par entreprise.
+## Étape 1 — Vérifier les connecteurs disponibles
+
+À faire à chaque exécution, pas une fois pour toutes.
+
+Avant toute recherche manuelle, appeler `SearchMcpRegistry` avec des mots-clés comme « Dropcontact », « Hunter.io », « Cognism », « LinkedIn Sales Navigator », « Pappers », « INPI ». Les connecteurs disponibles varient selon la session et l'organisation.
+
+Si un connecteur pertinent est actif, l'utiliser pour vérifier email et téléphone : c'est plus fiable que la déduction manuelle. Si aucun n'est disponible, le signaler dans le résultat final et poursuivre par les sources publiques.
+
+Ne pas proposer d'outil reposant sur une extension qui agit sur LinkedIn (Kaspr, Lusha, LeadIQ), ni Clearbit, qui n'existe plus comme produit autonome depuis son absorption par HubSpot. Le comparatif vérifié et les motifs figurent dans `references/outils-sales-intelligence.md`.
+
+## Étape 2 — Sources publiques et gratuites
+
+Pour chaque entreprise, chercher dans cet ordre, via WebSearch et WebFetch :
+
+1. le site de l'entreprise : pages « Équipe », « À propos », « Direction », « Presse » ;
+2. les communiqués de presse — les nominations y sont annoncées nommément, avec la date ;
+3. la presse spécialisée, très productive en interviews de DSI et de CDO : LeMagIT, Le Monde Informatique, Journal du Net ;
+4. les mentions légales, qui indiquent le représentant légal ;
+5. les registres légaux : [data.inpi.fr](https://data.inpi.fr/) (RNE — actes, statuts, dirigeants ; gratuit, compte requis) ou [Pappers](https://www.pappers.fr/) (consultation web gratuite) ;
+6. les offres d'emploi, qui révèlent l'organigramme et parfois le manager recruteur — [API France Travail « Offres d'emploi »](https://francetravail.io), compte développeur requis ;
+7. les rapports annuels et documents d'enregistrement universel, pour le comité exécutif des sociétés cotées ;
+8. les interventions publiques — conférences, webinars, podcasts, tribunes — citant des cadres nommément ;
+9. **en dernier, l'index du moteur sur LinkedIn** : `site:linkedin.com/in "Entreprise" [fonction]`. Lire les titres de résultats, ne jamais ouvrir les pages.
+
+**Limite à annoncer, pas à contourner.** Les registres légaux ne donnent que les représentants légaux — président, directeur général, gérant, administrateurs. Jamais un DSI, un CDO ou un RSSI. Aucune source publique gratuite française ne liste les cadres opérationnels. Sans LinkedIn ouvert, le taux de couverture sur ces fonctions est structurellement plus faible : le dire dans la sortie plutôt que de rendre une liste courte sans explication.
+
+Ces sources suffisent en général à constituer 2 à 5 candidats plausibles par entreprise, avant toute recherche d'email.
+
+## Étape 3 — Navigateur, si un bridge est connecté
+
+Le navigateur sert à consulter les pages qui ne se laissent pas lire autrement : site de l'entreprise, article de presse, rapport annuel. Une page à la fois, au rythme d'une lecture humaine.
+
+**Jamais sur linkedin.com.** Le navigateur utiliserait la session connectée du collaborateur, et c'est le seul chemin qui expose réellement son compte. Pour LinkedIn, s'en tenir à l'index du moteur (étape 2, point 9).
+
+Il n'existe aucune API LinkedIn publique pour ce besoin. Un outil qui promet un accès « API » aux profils opère hors cadre.
 
 ## Étape 4 — Email et téléphone
 
-Si un connecteur de sales intelligence (étape 1) a permis de trouver directement email et/ou téléphone vérifiés, indique-le comme tel.
+Trois cas.
 
-Sinon, si aucun email n'est trouvé publiquement mais qu'un ou plusieurs emails de la même entreprise sont déjà connus (par exemple un contact déjà en base, ou une adresse générique visible sur le site), déduis la convention d'adresse probable (prenom.nom@domaine, p.nom@domaine, initiale+nom@domaine, etc.) et applique-la au nom recherché. Présente toujours ce résultat comme une **estimation non vérifiée**, jamais comme un email confirmé — la nuance compte pour l'utilisateur qui va s'en servir.
+**Connecteur disponible.** Si un outil de sales intelligence a fourni un email ou un téléphone vérifié, l'indiquer comme tel.
 
-Si aucune base de comparaison n'existe et qu'aucun outil de vérification n'est disponible, dis simplement qu'aucun email fiable n'a pu être identifié plutôt que d'inventer une adresse.
+**Déduction de pattern.** Si aucun email n'apparaît publiquement mais qu'une adresse de la même entreprise est connue — contact déjà en base, adresse générique du site — en déduire la convention (prenom.nom@domaine, p.nom@domaine, initiale+nom@domaine) et l'appliquer au nom recherché. Présenter toujours ce résultat comme une **estimation non vérifiée**. La nuance compte pour qui va s'en servir.
 
-**Si ni email ni téléphone n'ont pu être trouvés ou estimés pour une personne**, ne laisse jamais la colonne Contact vide : mets à la place le lien vers son profil LinkedIn public (celui repéré à l'étape 2 ou 3), pour que l'utilisateur ait au moins un moyen de l'identifier et de le solliciter (message LinkedIn, demande de mise en relation). Précise que c'est un lien LinkedIn faute de coordonnées directes trouvées, pour que la différence avec un email/téléphone confirmé reste claire.
+**Rien de fiable.** Sans base de comparaison ni outil de vérification, indiquer qu'aucun email fiable n'a été identifié. Ne jamais inventer une adresse.
 
-## Étape 5 — Format de sortie
+Quand ni email ni téléphone n'existent pour une personne, la colonne Contact ne reste pas vide : y placer le lien vers son profil LinkedIn public, repéré à l'étape 2 ou 3, et préciser qu'il remplace des coordonnées directes introuvables.
 
-Présente le résultat sous la forme d'**un seul tableau**, avec une ligne par personne identifiée, même quand plusieurs entreprises sont traitées en une fois (la colonne Entreprise permet de s'y retrouver) :
+## Format de sortie
 
-| Entreprise | Personne | Contact |
-|---|---|---|
-| ... | Nom — Rôle | Email (trouvé / estimé — non vérifié) · Téléphone si trouvé |
-| ... | Nom — Rôle | Lien LinkedIn (aucun email/téléphone trouvé) |
+Un seul tableau, une ligne par personne, même quand plusieurs entreprises sont traitées ensemble.
 
-Garde la colonne "Personne" concise (nom, rôle) et regroupe les coordonnées dans la colonne "Contact" en précisant toujours si l'email est confirmé ou seulement estimé par déduction de pattern — cette nuance doit rester visible même dans ce format condensé. Quand ni email ni téléphone n'existent pour une personne, la colonne "Contact" contient son lien LinkedIn à la place (voir étape 4) plutôt que d'être laissée vide.
+| Entreprise | Personne | Persona | Niveau | Contact | Source | Vérifié le | Déjà en base |
+|---|---|---|---|---|---|---|---|
+| … | Nom — Poste | Data / SI / Sécurité / Métier / Direction | N ou N-1 | Email (confirmé / estimé, non vérifié) · Téléphone | (lien) | AAAA-MM-JJ | Non · ou Oui, suivi depuis le [date] |
+| … | Nom — Poste | … | … | Lien LinkedIn (aucune coordonnée trouvée) | (lien) | AAAA-MM-JJ | … |
 
-Termine systématiquement par : la liste des sources consultées (liens), et un rappel bref du cadre RGPD/CNIL applicable — voir `references/rgpd-cnil.md` pour le texte de référence à reprendre.
+La colonne **Persona** sert directement à la Skill 4 : c'est elle qui détermine l'angle du message. La colonne **Source** et la date de vérification ne sont pas décoratives — l'article 14 du RGPD impose de pouvoir dire d'où vient une coordonnée, et une donnée vieille de six mois n'a pas la même valeur qu'une donnée du jour.
 
-## Étape 6 — Limites à toujours mentionner explicitement
+Garder la colonne « Personne » concise : nom et poste exact tel qu'il est écrit chez le prospect.
 
-Rappelle dans la sortie, sans être lourd : que la skill ne fabrique jamais un email ou un téléphone sans base (source publique ou déduction de pattern signalée comme telle) ; qu'elle ne contourne pas les CGU des plateformes consultées ; et que la disponibilité d'un email/téléphone directement confirmé (plutôt qu'estimé) dépend des connecteurs actifs au moment de l'exécution — donc que le résultat peut être plus ou moins complet d'une session à l'autre selon les outils connectés.
+Terminer par la liste des sources consultées, avec liens, et un rappel bref du cadre RGPD/CNIL. Le texte de référence figure dans `references/rgpd-cnil.md`.
 
-## Enchaînement avec les autres skills
+## Limites
 
-Cette skill s'utilise sur la même liste d'entreprises que **veille-signaux-affaires** (Skill 3). Les deux sorties — contacts et signaux — sont les entrées directes de **ranking-entreprises-cibles** (Skill 3.5), qui priorise qui contacter en premier. Les contacts trouvés ici remplissent ensuite la colonne "Personne (rôle)" du tableau produit par **suivi-relance-discours-prospection** (Skill 4).
+Rappeler dans la sortie, sans insister :
 
-## Pour aller plus loin
+- la skill ne fabrique jamais un email ou un téléphone sans base — source publique, ou déduction signalée comme telle ;
+- elle ne contourne pas les conditions d'utilisation des plateformes consultées ;
+- aucune source publique française ne fournit d'email nominatif ni de mobile : c'est structurel, pas une lacune de la recherche ;
+- l'index du moteur sur LinkedIn donne le nom et l'entreprise de façon fiable, la fonction de façon inégale, et il peut avoir plusieurs mois de retard : un dirigeant arrivé récemment n'y figure pas encore ;
+- la disponibilité de coordonnées confirmées dépend des connecteurs actifs au moment de l'exécution, donc le résultat varie d'une session à l'autre.
 
-- `references/outils-sales-intelligence.md` : comparatif des outils (Kaspr, Lusha, Apollo.io, Cognism, Hunter.io, Dropcontact, LeadIQ, RocketReach) à consulter si l'utilisateur demande plus de détails sur un outil en particulier ou hésite entre plusieurs.
-- `references/rgpd-cnil.md` : texte de référence sur les règles RGPD/CNIL applicables à la prospection B2B, à reprendre pour le rappel de conformité en fin de sortie.
+**Deux pratiques circulent dans les retours d'expérience commerciaux et sont proscrites ici** : prétendre détenir un email qu'on n'a pas pour faire corriger l'interlocuteur, et refuser d'indiquer d'où vient une coordonnée en invoquant le CRM. Toutes deux contredisent l'obligation d'information de l'article 14 du RGPD. Si un utilisateur les évoque, le dire et proposer la formulation conforme.
+
+Rappeler aussi le cadre RGPD : le premier message doit indiquer d'où vient l'adresse (art. 14), identifier l'émetteur et offrir un refus simple. Appeler un professionnel sur un **numéro personnel** relève du régime consommateur, donc du consentement préalable obligatoire depuis le 11 août 2026. Détail dans `references/rgpd-cnil.md`.
+
+## Enchaînement
+
+Cette skill s'applique à la même liste d'entreprises que `veille-signaux-affaires` (Skill 3). Les deux sorties — contacts et signaux — alimentent `ranking-entreprises-cibles` (Skill 3.5), qui détermine qui contacter en premier.
+
+Les contacts trouvés ici alimentent la fiche de contact que produit `suivi-relance-discours-prospection` (Skill 4).
+
+## Références
+
+- `references/outils-sales-intelligence.md` — comparatif vérifié des outils : gratuité réelle, prix, exposition au blocage LinkedIn, position RGPD, et chaîne gratuite alternative.
+- `references/rgpd-cnil.md` — règles RGPD/CNIL applicables à la prospection B2B, à reprendre pour le rappel de conformité en fin de sortie.

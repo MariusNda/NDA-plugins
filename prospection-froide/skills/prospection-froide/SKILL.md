@@ -9,24 +9,53 @@ description: >-
   cibles, de contacts ou de signaux : rediriger vers la skill correspondante.
 ---
 
-# Message d'accueil — prospection-froide
+# Accueil du plugin prospection-froide
 
-Quand cette skill est déclenchée, présente à l'utilisateur, dans un message clair et convivial (pas de gros pavé), le contenu suivant :
+**Entrée** : la commande `/prospection-froide` ou une question sur le plugin.
+**Sortie** : un message d'accueil court présentant les six skills.
 
-1. **Une phrase de bienvenue** : ce plugin regroupe les 6 étapes du process de prospection commerciale NDA, pour automatiser la partie recherche fastidieuse.
+## Objectif
 
-2. **La liste des 6 skills, dans l'ordre**, avec pour chacune une ligne résumant quand l'utiliser :
-   - `discours-campagne-prospection` (0) — cadrer une nouvelle campagne (cible, argumentaire, objections)
-   - `prospection-entreprise-cible` (1) — trouver des entreprises cibles par look-alike
-   - `recherche-contacts-entreprise` (2) — trouver qui contacter dans une entreprise
-   - `veille-signaux-affaires` (3) — trouver pourquoi/quand contacter une entreprise
-   - `ranking-entreprises-cibles` (3.5) — prioriser une liste de cibles selon fit + signaux + contacts
-   - `suivi-relance-discours-prospection` (4) — suivre le pipeline, préparer des messages et des relances
+Cette skill présente le plugin et son mode d'emploi. Elle ne lance aucune recherche et ne produit aucun livrable de prospection.
 
-3. **Un rappel du fonctionnement** : chaque skill se déclenche automatiquement selon la demande formulée (pas besoin de connaître leur nom exact), et elles s'enchaînent dans l'ordre ci-dessus au fil d'une campagne.
+## Contenu du message
 
-4. **Un rappel des garde-fous** : aucune skill de ce plugin n'envoie de message ou de mail automatiquement ; le classement de la skill 3.5 nécessite une validation humaine avant d'être utilisé par la skill 4.
+Restituer les cinq blocs ci-dessous, dans cet ordre, en un message court.
 
-5. **Une invitation à démarrer** : proposer d'commencer par cadrer une nouvelle campagne, ou de répondre à une question sur le fonctionnement du plugin.
+### 1. Objet du plugin
 
-Garde le ton simple et direct, sans jargon technique inutile — l'utilisateur type est un commercial ou un manager non-technique.
+Le plugin couvre les six étapes de la prospection commerciale NDA. Il automatise la partie recherche, la plus fastidieuse du process.
+
+### 2. Les six skills, dans l'ordre
+
+| Ordre | Skill | Quand l'utiliser |
+|---|---|---|
+| 0 | `discours-campagne-prospection` | Cadrer une nouvelle campagne : cible, argumentaire, objections |
+| 1 | `prospection-entreprise-cible` | Trouver des entreprises cibles par look-alike |
+| 2 | `recherche-contacts-entreprise` | Trouver qui contacter dans une entreprise |
+| 3 | `veille-signaux-affaires` | Trouver pourquoi et quand contacter une entreprise |
+| 3.5 | `ranking-entreprises-cibles` | Prioriser une liste de cibles selon fit, signaux et contacts |
+| 4 | `suivi-relance-discours-prospection` | Construire la séquence, rédiger le message, préparer l'appel, suivre le pipeline |
+
+### 3. Fonctionnement
+
+Chaque skill se déclenche sur la demande formulée. Connaître son nom exact n'est pas nécessaire. Les skills s'enchaînent dans l'ordre du tableau au fil d'une campagne.
+
+### 4. Garde-fous
+
+Aucune skill du plugin n'envoie de message ni de mail : elles rédigent et rapportent, l'envoi reste humain. Le classement produit par la skill 3.5 exige une validation humaine avant d'être utilisé par la skill 4.
+
+### 5. Prérequis à vérifier
+
+Deux vérifications avant de lancer quoi que ce soit.
+
+- **Connexion Notion.** Les skills 2, 3.5 et 4 lisent la base de suivi de prospection. Si le connecteur Notion n'est pas actif, le dire et indiquer où l'activer — la connexion n'est jamais automatique.
+- **Qui utilise le plugin.** Demander le prénom au premier échange : sans lui, le contrôle anti-doublon entre collaborateurs ne peut pas fonctionner.
+
+### 6. Point de départ
+
+Proposer deux suites : cadrer une nouvelle campagne, ou répondre à une question sur le fonctionnement du plugin.
+
+## Ton
+
+Message court, sans pavé ni jargon technique. Le lecteur type est un commercial ou un manager non technique.

@@ -18,105 +18,133 @@ description: >-
   en premier.
 ---
 
-# Veille de signaux d'affaires sur des entreprises cibles
+# Veille de signaux d'affaires (Skill 3)
 
-## Pourquoi cette méthode en particulier
+**Entrée** : une ou plusieurs entreprises déjà identifiées.
+**Sortie** : un tableau de signaux datés, sourcés et priorisés, avec un angle d'approche par signal.
 
-Un signal d'affaires est un événement observable et daté (levée de fonds, recrutement, nomination, incident, appel d'offres...) qui révèle qu'une entreprise a, ou va bientôt avoir, un besoin concret — plutôt qu'une simple ressemblance sectorielle avec les clients NDA. C'est la différence entre "cette entreprise pourrait théoriquement avoir besoin de nous" (déjà couvert par la skill prospection-entreprise-cible) et "cette entreprise a un événement récent qui justifie de la contacter cette semaine".
+## Objectif
 
-Deux principes structurent tout le travail :
+Un signal d'affaires est un événement observable et daté — levée de fonds, recrutement, nomination, incident, appel d'offres — qui révèle un besoin concret, actuel ou imminent.
 
-- **La fraîcheur prime.** Un signal se périme. Une levée de fonds ou une nomination de DSI se traite en jours ou semaines ; un mouvement de fond (recrutement en hausse, migration cloud annoncée) se traite en semaines ; un signal isolé sans actualité récente n'a presque plus de valeur commerciale. Toujours dater précisément chaque signal trouvé et le classer selon sa fraîcheur (voir Étape 4).
-- **L'effet de cumul (stacking).** Un seul signal isolé est un indice faible. Deux ou trois signaux convergents sur la même entreprise (ex : nomination d'un nouveau DSI + recrutements Data en cours + levée de fonds récente) forment un dossier bien plus solide qu'un signal unique. Cherche systématiquement plusieurs catégories de signaux par entreprise avant de conclure qu'il n'y a "rien à signaler".
+Cette skill répond à une question précise : pourquoi et quand contacter cette entreprise. Elle se distingue de la Skill 1, qui répond à « cette entreprise pourrait théoriquement avoir besoin de NDA ».
+
+## Principes
+
+**La fraîcheur prime.** Un signal se périme. Une levée de fonds ou une nomination de DSI se traite en jours ou en semaines. Un mouvement de fond — recrutements en hausse, migration cloud annoncée — se traite en semaines. Un signal isolé sans actualité récente n'a presque plus de valeur commerciale. Dater précisément chaque signal et le classer selon sa fraîcheur (Étape 4).
+
+**Un signal est un prétexte d'entrée, pas une preuve de besoin.** Les entreprises communiquent le plus souvent après coup : le signal arrive donc en aval de la décision, rarement avant. Il ouvre une conversation — « j'ai vu que vous faisiez X, voici ce qu'on pourrait faire ensuite » — plus qu'il ne révèle un achat imminent. Formuler les angles d'approche dans ce registre, sans surjouer l'urgence.
+
+**Le cumul fait le dossier.** Un signal isolé est un indice faible. Deux ou trois signaux convergents sur la même entreprise — nomination d'un DSI, recrutements Data en cours, levée de fonds récente — forment un dossier solide. Balayer plusieurs catégories par entreprise avant de conclure qu'il n'y a rien à signaler.
 
 ## Étape 0 — Clarifier la demande
 
-Récupère la liste d'entreprises à traiter. Elle peut arriver sous forme de tableau collé dans le chat (par exemple la sortie de la skill prospection-entreprise-cible), de fichier, ou simplement de noms cités dans le message.
+Récupérer la liste d'entreprises. Elle arrive sous forme de tableau collé dans le chat (souvent la sortie de la Skill 1), de fichier, ou de simples noms cités.
 
-Précise deux choses avant de lancer la recherche :
+Clarifier deux points avant de lancer la recherche.
 
-1. **Fenêtre temporelle** — via AskUserQuestion, propose : 3 derniers mois / 6 derniers mois / 12 derniers mois (par défaut) / pas de limite. Un signal vieux de plus d'un an n'est en général plus actionnable, sauf recherche volontairement large.
-2. **Catégories à prioriser** — il y a 7 catégories (voir Étape 2), donc plus de 4 : liste-les en clair dans le chat plutôt que d'utiliser AskUserQuestion, et demande lesquelles privilégier. L'utilisateur peut répondre "toutes" ou "passer" pour tout couvrir sans filtrer.
+1. **Fenêtre temporelle.** Via AskUserQuestion : 3 mois, 6 mois, 12 mois (par défaut), ou pas de limite. Un signal de plus d'un an n'est en général plus actionnable, sauf recherche volontairement large.
+2. **Catégories à prioriser.** Les 8 catégories dépassent le seuil de 4 : les lister en clair dans le chat plutôt que via AskUserQuestion, puis demander lesquelles privilégier. L'utilisateur peut répondre « toutes » ou « passer ».
 
-Ne lance la recherche qu'une fois ces deux points clarifiés (ou si l'utilisateur dit explicitement de tout couvrir / de lancer maintenant).
+La recherche ne démarre qu'une fois ces deux points tranchés, ou sur demande explicite de lancer.
 
-## Étape 1 — Vérifier les connecteurs disponibles (à chaque exécution)
+## Étape 1 — Vérifier les connecteurs disponibles
 
-Avant de partir sur la recherche manuelle, appelle `SearchMcpRegistry` avec des mots-clés comme "Crunchbase", "Pappers", "Societe.com", "BODACC", "Kaspr", "veille économique", "intent data", "news monitoring". Les connecteurs disponibles évoluent selon la session et l'organisation ; ne pars jamais du principe qu'aucun outil n'est branché sans avoir vérifié à ce moment précis.
+À faire à chaque exécution, pas une fois pour toutes.
 
-Si un connecteur pertinent est disponible (base légale, presse spécialisée, intent data), utilise-le en complément des recherches web — il est en général plus fiable et plus à jour qu'une recherche Google seule. Si rien n'est disponible, dis-le clairement dans le résultat final et procède avec WebSearch/WebFetch (et le navigateur si le bridge Chrome est connecté, pour consulter des pages précises comme LinkedIn ou le site de l'entreprise).
+Appeler `SearchMcpRegistry` avec des mots-clés comme « BODACC », « Pappers », « INPI », « BOAMP », « France Travail », « veille économique », « news monitoring ». Les connecteurs disponibles varient selon la session et l'organisation.
 
-## Étape 2 — Les 7 catégories de signaux à rechercher
+Si un connecteur pertinent est actif — base légale, presse spécialisée — l'utiliser en complément des recherches web. Sinon, le signaler dans le résultat final et procéder par WebSearch et WebFetch, avec le navigateur si le bridge Chrome est connecté.
 
-Pour chaque entreprise, balaie systématiquement ces catégories plutôt que de s'arrêter au premier résultat trouvé. Chacune a ses propres sources et formulations de recherche type ; le détail des requêtes est dans `references/typologie-signaux-requetes.md`.
+Les API publiques listées dans `references/sources-verifiees.md` sont interrogeables directement, sans connecteur : BODACC et BOAMP n'exigent aucune clé, l'API Recherche d'entreprises aucune authentification.
 
-1. **Financier / corporate** — levée de fonds, résultats en forte croissance, procédure collective, fusion-acquisition, changement d'actionnariat. Sources : presse économique (Les Echos, La Tribune, Challenges), Bodacc, Pappers/Société.com, Crunchbase.
-2. **Dirigeants & organisation** — nomination DG, DSI, CTO, CDO, RSSI, changement de comité de direction. Un nouveau dirigeant réévalue souvent ses prestataires dans ses 90 premiers jours. Sources : LinkedIn, communiqués de presse, Bodacc (mandataires sociaux).
-3. **Recrutement & croissance** — hausse des offres d'emploi sur des postes Data/IA/Cyber/DSI, ouverture de nouveaux bureaux ou filiales, croissance d'effectif. Sources : LinkedIn Jobs, Welcome to the Jungle, Indeed, pages carrières.
-4. **Technologie & transformation** — migration cloud, projet IA annoncé, refonte de SI, adoption de nouveaux outils, partenariat technologique. Sources : presse spécialisée (Usine Digitale, LeMagIT, Journal du Net), offres d'emploi mentionnant la stack technique, communiqués de partenaires tech.
-5. **Cyber & conformité** — incident de sécurité, fuite de données, sanction ou mise en demeure CNIL, mise en conformité réglementaire (NIS2, DORA, RGPD), certification ISO 27001 en cours. Sources : CNIL (sanctions), presse cyber (LeMagIT, ZATAZ), communiqués officiels.
-6. **Commande publique** — appel d'offres ou marché public en cours touchant à la Data/IA/Cyber (pertinent surtout si l'entreprise cible travaille avec le secteur public ou est elle-même un acteur public/parapublic). Sources : BOAMP, marches-publics.gouv.fr.
-7. **Actualité stratégique générale** — nouveau produit, expansion géographique, partenariat commercial, changement de positionnement. Sources : Google News, site de l'entreprise (rubrique presse/actualités).
+## Étape 2 — Les 8 catégories de signaux
 
-Ne force pas une catégorie qui ne s'applique manifestement pas (ex : commande publique pour une PME purement privée sans marché public) — précise-le plutôt que d'inventer un signal.
+Pour chaque entreprise, balayer les huit catégories plutôt que s'arrêter au premier résultat. Les formulations de recherche associées figurent dans `references/typologie-signaux-requetes.md`.
 
-## Étape 2bis — Compiler le Trigger Playbook du segment (une fois par campagne, pas par entreprise)
+1. **Financier / corporate** — levée de fonds, résultats en forte croissance, procédure collective, fusion-acquisition, changement d'actionnariat. Sources gratuites : **BODACC** (une augmentation de capital est un proxy daté d'une levée), INPI/RNE, BALO et Info-financière pour les sociétés cotées. Presse : Maddyness. Les Echos, La Tribune et Challenges sont sous paywall, à réserver à la lecture humaine.
+2. **Dirigeants & organisation** — nomination d'un DG, DSI, CTO, CDO, RSSI, changement de comité de direction. Un dirigeant entrant réévalue souvent ses prestataires dans ses 90 premiers jours. Sources : communiqués de presse, page Direction du site, BODACC et INPI pour les mandataires sociaux, index du moteur pour repérer un changement de poste, sans ouvrir de page LinkedIn.
+3. **Recrutement & croissance** — hausse des offres sur des postes Data/IA/Cyber/DSI, ouverture de bureaux ou de filiales, croissance d'effectif. Source gratuite et outillable : **l'API France Travail « Offres d'emploi v2 »**. Pages carrières de l'entreprise. Welcome to the Jungle par son sitemap. Indeed n'a plus d'API publique depuis 2023.
+4. **Technologie & transformation** — migration cloud, projet IA annoncé, refonte de SI, adoption d'outils, partenariat technologique. Sources gratuites : LeMagIT, Le Monde Informatique, Journal du Net, tous avec flux RSS libre. **Ajouter la presse de la verticale traitée** : ces trois titres sont IT-centrés et parlent peu des ETI industrielles. Pour l'agroalimentaire, LSA Conso et L'Usine Nouvelle couvrent bien mieux ; chercher l'équivalent pour chaque secteur avant de conclure qu'il n'y a rien. L'Usine Digitale est en partie payante. Offres d'emploi mentionnant la stack, communiqués de partenaires tech.
+5. **Cyber & conformité** — incident de sécurité, fuite de données, sanction ou mise en demeure CNIL, mise en conformité (NIS2, DORA, RGPD), certification ISO 27001 en cours. Sources : **CERT-FR** (avis et alertes ANSSI), **Cybermalveillance.gouv.fr**, page des sanctions CNIL, ZATAZ, LeMagIT.
+6. **Commande publique** — appel d'offres ou marché public touchant à la Data, l'IA ou la Cyber. Pertinent surtout si l'entreprise émet elle-même des marchés. Sources : **API BOAMP**, PLACE (`marches-publics.gouv.fr`), les DECP consolidées pour les marchés attribués, TED pour l'échelon européen.
+7. **Actualité stratégique générale** — nouveau produit, expansion géographique, partenariat commercial, changement de positionnement. Sources : rubrique presse du site de l'entreprise, flux RSS des médias cités ci-dessus. Google News n'a plus d'API et ses flux RSS sont interdits par son robots.txt : appoint manuel seulement.
 
-Avant de scanner les entreprises une par une, synthétise **une seule fois pour tout le segment de la campagne** — pas entreprise par entreprise — un Trigger Playbook : pour chaque catégorie retenue à l'Étape 2, explicite pourquoi ce type de signal justifie un contact, pas seulement qu'il existe.
+8. **Signaux portés par l'interlocuteur** — publications et prises de parole récentes de la personne visée, changement de poste, ancienneté dans la fonction, sujets sur lesquels elle communique de façon répétée, cas d'usage publié sur le site de l'entreprise. Un directeur data qui publie régulièrement sur un sujet indique un intérêt actif, exploitable dans l'accroche. Sources : index du moteur sur les profils et publications (`site:linkedin.com/...`, sans ouvrir les pages), interventions en conférence, tribunes, rubrique « cas clients » du site.
 
-| Catégorie | Logique métier (pourquoi ça crée un besoin) | Fenêtre par défaut | Persona visée | Angle de message par défaut |
+Ne pas forcer une catégorie manifestement hors sujet, par exemple la commande publique pour une PME purement privée. Le préciser vaut mieux qu'inventer un signal.
+
+## Étape 2 bis — Compiler le Trigger Playbook du segment
+
+Une fois par campagne, pas par entreprise.
+
+Avant de scanner les entreprises, synthétiser pour tout le segment un Trigger Playbook. Pour chaque catégorie retenue, expliciter pourquoi ce type de signal justifie un contact, et pas seulement qu'il existe.
+
+| Catégorie | Logique métier | Fenêtre par défaut | Persona visée | Angle de message |
 |---|---|---|---|---|
-| ex : Dirigeants & organisation | Un nouveau DSI réévalue ses prestataires dans ses 90 premiers jours | Tier 1 | DSI/CTO entrant | Point de contexte avant qu'il fige ses choix |
+| Dirigeants & organisation | Un DSI entrant réévalue ses prestataires dans ses 90 premiers jours | Tier 1 | DSI/CTO entrant | Point de contexte avant qu'il fige ses choix |
 | … | … | … | … | … |
 
-Ce tableau sert ensuite de grille de lecture pour chaque entreprise scannée à l'Étape 3 : tu n'as plus à réinventer la logique métier ou l'angle à chaque nouvelle entreprise, seulement à vérifier si le signal concret existe et à le dater. Si la campagne a été cadrée par **discours-campagne-prospection** (Skill 0), reprends le momentum et la cible interlocuteur qui y ont été définis (Groupes A et C) comme base de ce playbook plutôt que de repartir de zéro.
+Ce tableau sert de grille de lecture pour chaque entreprise scannée à l'Étape 3. La logique métier et l'angle sont fixés une fois ; il reste à vérifier si le signal concret existe et à le dater.
+
+Si la campagne a été cadrée par `discours-campagne-prospection` (Skill 0), reprendre le momentum et la cible interlocuteur définis aux groupes A et C comme base du playbook.
 
 ## Étape 3 — Méthodologie de recherche
 
-Pour chaque entreprise et chaque catégorie retenue à l'étape 0 :
+Pour chaque entreprise et chaque catégorie retenue :
 
-- Multiplie les recherches plutôt que de te contenter d'une requête générique : le nom de l'entreprise seul remonte rarement un signal précis. Combine toujours le nom exact de l'entreprise (entre guillemets) avec des mots-clés de la catégorie visée (voir `references/typologie-signaux-requetes.md` pour des exemples de formulations prêtes à l'emploi).
-- Varie les angles : recherche généraliste (Google News), recherche ciblée par site (`site:linkedin.com/company/...`, `site:welcometothejungle.com`), recherche par source spécialisée (nom du média + entreprise).
-- Filtre mentalement par date à chaque résultat trouvé : un article non daté ou ancien de plus d'un an sort du périmètre sauf mention contraire de l'utilisateur.
-- Privilégie la source primaire (communiqué officiel, page LinkedIn de l'entreprise, article de presse spécialisée) à un blog ou agrégateur secondaire qui reprend l'info sans la dater précisément.
-- N'invente jamais un signal à partir d'une simple déduction sectorielle ("ce secteur est en général en transformation IA en ce moment") : un signal doit être rattaché à un événement concret, daté, et sourcé. Si rien de concret n'est trouvé pour une entreprise, dis-le clairement plutôt que de forcer un résultat.
+- **Restreindre le champ, sinon la recherche rend du bruit.** Une requête généraliste du type `"Entreprise" 2026 IA OR recrutement data` remonte massivement des articles de fond sans rapport avec l'entreprise : un test réel a donné un seul résultat pertinent sur huit. La même recherche avec restriction `site:` en a donné huit sur huit. Toujours ajouter une restriction de site, ou un second ancrage propre à l'entreprise — une ville, un dirigeant, une marque.
+- **Multiplier les requêtes.** Le nom de l'entreprise seul remonte rarement un signal précis. Combiner le nom exact, entre guillemets, avec des mots-clés de la catégorie visée. Des formulations prêtes à l'emploi figurent dans `references/typologie-signaux-requetes.md`.
+- **Varier les angles** : flux RSS des médias spécialisés, recherche par site (`site:linkedin.com/company/...`, `site:welcometothejungle.com`), recherche par source spécialisée (nom du média et nom de l'entreprise).
+- **Filtrer par date à chaque résultat.** Un article non daté ou vieux de plus d'un an sort du périmètre, sauf consigne contraire.
+- **Privilégier la source primaire** — communiqué officiel, site de l'entreprise, presse spécialisée — plutôt qu'un blog ou un agrégateur qui reprend l'information sans la dater.
+- **Ne jamais inventer un signal** à partir d'une déduction sectorielle du type « ce secteur est en transformation IA en ce moment ». Un signal se rattache à un événement concret, daté et sourcé. Si rien de concret n'apparaît, le dire.
 
-## Étape 4 — Prioriser les signaux trouvés
+## Étape 4 — Prioriser les signaux
 
-Classe chaque signal détecté dans un des trois niveaux, en t'inspirant de la logique du signal-based selling (les signaux les plus "chauds" se périment vite, les signaux de fond durent plus longtemps) :
+Classer chaque signal dans l'un des trois niveaux. Les signaux les plus chauds se périment vite, les signaux de fond durent.
 
-| Priorité | Fenêtre d'action | Exemples de signaux |
+| Priorité | Fenêtre d'action | Exemples |
 |---|---|---|
-| **Tier 1 — Agir sous 48h** | Se périme très vite | Levée de fonds récente, nomination DSI/CDO/RSSI, appel d'offres ouvert, incident cyber/sanction CNIL récente |
-| **Tier 2 — Agir sous 1 semaine** | Se périme en semaines | Hausse des recrutements Data/IA/Cyber, migration technologique annoncée, résultats financiers en forte croissance, changement d'actionnariat |
-| **Tier 3 — À surveiller** | Se périme en mois | Expansion géographique, actualité stratégique générale, certification en cours, mention de presse isolée sans suite |
+| **Tier 1 — agir sous 48 h** | Se périme très vite | Levée de fonds récente, nomination DSI/CDO/RSSI, appel d'offres ouvert, incident cyber ou sanction CNIL récente |
+| **Tier 2 — agir sous 1 semaine** | Se périme en semaines | Hausse des recrutements Data/IA/Cyber, migration technologique annoncée, résultats en forte croissance, changement d'actionnariat |
+| **Tier 3 — à surveiller** | Se périme en mois | Expansion géographique, actualité stratégique générale, certification en cours, mention de presse isolée |
 
-Applique l'effet de cumul : si une même entreprise cumule 2 signaux ou plus (même de tiers différents), remonte-la en tête de liste et signale explicitement la combinaison — c'est elle qui mérite le contact prioritaire, pas nécessairement l'entreprise avec le signal isolé le plus spectaculaire.
+**Cumul sectoriel.** Regarder aussi le cumul entre entreprises : quand un même type de signal apparaît chez plusieurs cibles du même secteur — une évolution réglementaire, une vague d'investissements, une tension commune — c'est le segment entier qui s'ouvre, pour quelques mois. Le signaler dans la synthèse : cela vaut souvent plus qu'un signal individuel spectaculaire, et alimente le Trigger Playbook de l'Étape 2 bis.
 
-## Étape 5 — Format de sortie
+Appliquer l'effet de cumul par entreprise : une entreprise qui totalise deux signaux ou plus, même de tiers différents, remonte en tête de liste. Signaler explicitement la combinaison. C'est elle qui mérite le contact prioritaire, pas nécessairement le signal isolé le plus spectaculaire.
 
-Ouvre toujours par une courte synthèse : les entreprises à contacter en priorité (celles qui cumulent plusieurs signaux ou un signal Tier 1), en une ou deux phrases.
+## Format de sortie
 
-Puis un tableau, une ligne par signal (une entreprise avec plusieurs signaux occupe plusieurs lignes) :
+Ouvrir par une synthèse d'une ou deux phrases : les entreprises à contacter en priorité, c'est-à-dire celles qui cumulent plusieurs signaux ou portent un signal Tier 1.
+
+Puis un tableau, une ligne par signal. Une entreprise à plusieurs signaux occupe plusieurs lignes.
 
 | Entreprise | Signal détecté | Catégorie | Date | Source | Priorité | Angle d'approche NDA |
 |---|---|---|---|---|---|---|
-| ... | ... | ... | ... | (lien) | Tier 1/2/3 | Pourquoi ce signal ouvre une conversation Data/IA/Cyber |
+| … | … | … | … | (lien) | Tier 1/2/3 | … |
 
-La colonne "Angle d'approche NDA" est importante : ne te contente pas de rapporter le fait, explique en une phrase pourquoi il justifie un contact et quel besoin potentiel il révèle (ex : "Nouveau DSI arrivé en poste il y a 3 semaines → réévalue probablement les prestataires en place").
+La colonne « Angle d'approche NDA » porte la valeur du tableau. Elle explique en une phrase pourquoi le signal justifie un contact et quel besoin il révèle. Exemple : « Nouveau DSI arrivé il y a 3 semaines → réévalue probablement les prestataires en place. »
 
-Termine par la liste des sources consultées (liens) et un bref rappel des limites (Étape 6).
+Terminer par la liste des sources consultées et un rappel bref des limites.
 
-## Étape 6 — Limites à toujours mentionner explicitement
+## Limites
 
-Rappelle dans la sortie, sans être lourd : que la recherche s'appuie sur des sources publiques (et des connecteurs si disponibles), donc que l'absence de signal trouvé ne veut pas dire absence de signal réel — seulement qu'il n'est pas visible publiquement au moment de la recherche ; que la fraîcheur et la complétude dépendent de la couverture presse de chaque entreprise (une PME peu médiatisée aura structurellement moins de signaux visibles qu'un grand groupe, sans que cela reflète son potentiel réel) ; et que la disponibilité de données d'intention propriétaires (visites de site, recherches d'outils) dépend des connecteurs actifs au moment de l'exécution.
+Rappeler dans la sortie, sans insister :
 
-## Enchaînement avec les autres skills
+- la recherche s'appuie sur des sources publiques et sur les connecteurs disponibles : l'absence de signal trouvé ne signifie pas absence de signal réel, seulement absence de visibilité publique au moment de la recherche ;
+- la fraîcheur et la complétude dépendent de la couverture presse de chaque entreprise — une PME peu médiatisée aura structurellement moins de signaux visibles qu'un grand groupe, sans que son potentiel soit moindre ;
+- l'accès aux données d'intention propriétaires (visites de site, recherches d'outils) dépend des connecteurs actifs au moment de l'exécution.
 
-Cette skill s'utilise naturellement après **prospection-entreprise-cible** (pour prioriser le Top 20 obtenu) et avant **recherche-contacts-entreprise** (une fois les entreprises prioritaires identifiées, on cherche qui contacter chez elles). Si l'utilisateur enchaîne les trois, garde la même liste d'entreprises d'une skill à l'autre plutôt que de redemander le contexte depuis zéro.
+## Enchaînement
 
-Les tiers de priorité produits à l'Étape 4 (et l'effet de cumul) sont l'une des deux entrées directes de **ranking-entreprises-cibles** (Skill 3.5), qui les recroise avec les contacts trouvés par recherche-contacts-entreprise pour produire un classement final par actionnabilité, ensuite utilisé par suivi-relance-discours-prospection (Skill 4). Si l'utilisateur a aussi lancé recherche-contacts-entreprise sur la même liste, propose d'enchaîner sur ranking-entreprises-cibles plutôt que de s'arrêter au tableau de signaux seul.
+Cette skill s'utilise après `prospection-entreprise-cible` (Skill 1), pour prioriser le Top 20, et avant ou en parallèle de `recherche-contacts-entreprise` (Skill 2). Conserver la même liste d'entreprises d'une skill à l'autre.
 
-## Pour aller plus loin
+Les tiers produits à l'Étape 4 constituent l'une des deux entrées de `ranking-entreprises-cibles` (Skill 3.5), qui les recroise avec les contacts pour produire un classement par actionnabilité. Ce classement alimente ensuite `suivi-relance-discours-prospection` (Skill 4).
 
-- `references/typologie-signaux-requetes.md` : exemples de requêtes de recherche prêtes à l'emploi pour chacune des 7 catégories de signaux, à adapter au nom de l'entreprise recherchée.
+Si la Skill 2 a déjà tourné sur la même liste, proposer d'enchaîner sur la Skill 3.5 plutôt que s'arrêter au tableau de signaux.
+
+## Références
+
+- `references/sources-verifiees.md` — gratuité, API, accès sans compte et restrictions d'usage de chaque source, et sources payantes à ne pas présenter comme gratuites.
+- `references/typologie-signaux-requetes.md` — requêtes prêtes à l'emploi pour les catégories d'entreprise, à adapter au nom de l'entreprise.

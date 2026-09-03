@@ -1,7 +1,7 @@
 {
   "name": "prospection-froide",
-  "version": "0.1.0",
-  "description": "Pipeline de skills pour automatiser la prospection commerciale NDA : cadrage de campagne, recherche de cibles, contacts, signaux d'affaires, ranking et relance.",
+  "version": "0.2.0",
+  "description": "Pipeline de skills pour la prospection commerciale NDA : cadrage de campagne, recherche de cibles, contacts, signaux d'affaires, priorisation, séquence multicanale et préparation d'appel.",
   "author": {
     "name": "NDA Partners"
   }
